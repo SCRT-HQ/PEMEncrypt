@@ -353,5 +353,4 @@ MigrationBackup/
 
 # Repo specific
 BuildOutput
-Test
 *.pem
