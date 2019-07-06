@@ -10,7 +10,7 @@ function Import-Assemblies {
         }
         try {
             $PEMEncrypt = [System.IO.Path]::Combine($PSScriptRoot,'bin','SCRTHQ.PEMEncrypt.dll')
-            Add-Type -Path $PEMEncrypt -ErrorAction SilentlyContinue | Out-Null
+            Add-Type -Path $PEMEncrypt -ReferencedAssemblies $bouncyCastleDll -ErrorAction SilentlyContinue | Out-Null
         }
         catch {
             $Global:Error.Remove($Global:Error[0])
