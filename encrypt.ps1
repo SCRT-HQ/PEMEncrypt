@@ -4,15 +4,19 @@ Param (
     $StringToEncrypt,
     [parameter(Mandatory,Position = 1)]
     [String]
-    $PublicKeyPath
+    $PublicKeyPath,
+    [parameter(Position = 2)]
+    [Int]
+    $KeySize = 2048
 )
 
 try {
     . ([System.IO.Path]::Combine($PSScriptRoot,'loadAssemblies.ps1'))
 
-    [SCRTHQ.PEMEncrypt.Encoder]::Encrypt(
+    [SCRTHQ.PEMEncrypt.Crypto]::Encrypt(
         $StringToEncrypt,
-        ([System.IO.File]::ReadAllText((Resolve-Path $PublicKeyPath).Path))
+        ([System.IO.File]::ReadAllText((Resolve-Path $PublicKeyPath).Path)),
+        $KeySize
     )
 }
 catch {

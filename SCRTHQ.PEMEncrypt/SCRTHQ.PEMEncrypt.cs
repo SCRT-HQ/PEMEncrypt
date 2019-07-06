@@ -10,10 +10,11 @@ using System.Security.Cryptography;
 
 namespace SCRTHQ.PEMEncrypt
 {
-    public class Encoder
+    public class Crypto
     {
-        public static string Encrypt(string stringToEncrypt, string publicKey, int dwKeySize = 1024)
+        public static string Encrypt(string stringToEncrypt, string publicKey, int dwKeySize = 2048)
         {
+            Byte[] bytesToEncrypt = Encoding.UTF8.GetBytes(stringToEncrypt);
             PemReader reader;
             RsaKeyParameters keyPair;
 
@@ -22,29 +23,27 @@ namespace SCRTHQ.PEMEncrypt
                 reader = new PemReader(txtreader);
                 keyPair = (RsaKeyParameters) reader.ReadObject();
             }
+
             RSAParameters rsaParameters = new RSAParameters();
             rsaParameters.Modulus = keyPair.Modulus.ToByteArrayUnsigned();
             rsaParameters.Exponent = keyPair.Exponent.ToByteArrayUnsigned();
+
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(dwKeySize);
             rsa.ImportParameters(rsaParameters);
+
             string encrypted = Convert.ToBase64String(
                 rsa.Encrypt(
-                    Encoding.UTF8.GetBytes(
-                        stringToEncrypt
-                    ),
+                    bytesToEncrypt,
                     RSAEncryptionPadding.Pkcs1
                 )
             );
             return encrypted;
         }
-    }
-    public class Decoder
-    {
         public static string Decrypt(string stringToDecrypt, string privateKey, string password = null)
         {
-            var bytesToDecrypt = Convert.FromBase64String(stringToDecrypt);
+            Byte[] bytesToDecrypt = Convert.FromBase64String(stringToDecrypt);
             AsymmetricCipherKeyPair keyPair;
-            var decryptEngine = new Pkcs1Encoding(new RsaEngine());
+            Pkcs1Encoding decryptEngine = new Pkcs1Encoding(new RsaEngine());
 
             using (TextReader txtreader = new StringReader(privateKey))
             {
@@ -59,7 +58,13 @@ namespace SCRTHQ.PEMEncrypt
                 decryptEngine.Init(false, keyPair.Private);
             }
 
-            var decrypted = Encoding.UTF8.GetString(decryptEngine.ProcessBlock(bytesToDecrypt, 0, bytesToDecrypt.Length));
+            var decrypted = Encoding.UTF8.GetString(
+                decryptEngine.ProcessBlock(
+                    bytesToDecrypt,
+                    0,
+                    bytesToDecrypt.Length
+                )
+            );
             return decrypted;
         }
         private static AsymmetricCipherKeyPair DecodePrivateKey(TextReader privateKey)

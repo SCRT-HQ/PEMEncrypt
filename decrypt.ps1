@@ -14,7 +14,7 @@ Param (
 try {
     . ([System.IO.Path]::Combine($PSScriptRoot,'loadAssemblies.ps1'))
 
-    [SCRTHQ.PEMEncrypt.Decoder]::Decrypt(
+    [SCRTHQ.PEMEncrypt.Crypto]::Decrypt(
         $StringToDecrypt,
         ([System.IO.File]::ReadAllText((Resolve-Path $PrivateKeyPath).Path)),
         $Password
