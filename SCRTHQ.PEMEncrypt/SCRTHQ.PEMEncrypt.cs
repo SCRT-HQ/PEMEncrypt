@@ -6,9 +6,38 @@ using Org.BouncyCastle.OpenSsl;
 using System;
 using System.IO;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace SCRTHQ.PEMEncrypt
 {
+    public class Encoder
+    {
+        public static string Encrypt(string stringToEncrypt, string publicKey, int dwKeySize = 1024)
+        {
+            PemReader reader;
+            RsaKeyParameters keyPair;
+
+            using (TextReader txtreader = new StringReader(publicKey))
+            {
+                reader = new PemReader(txtreader);
+                keyPair = (RsaKeyParameters) reader.ReadObject();
+            }
+            RSAParameters rsaParameters = new RSAParameters();
+            rsaParameters.Modulus = keyPair.Modulus.ToByteArrayUnsigned();
+            rsaParameters.Exponent = keyPair.Exponent.ToByteArrayUnsigned();
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(dwKeySize);
+            rsa.ImportParameters(rsaParameters);
+            string encrypted = Convert.ToBase64String(
+                rsa.Encrypt(
+                    Encoding.UTF8.GetBytes(
+                        stringToEncrypt
+                    ),
+                    RSAEncryptionPadding.Pkcs1
+                )
+            );
+            return encrypted;
+        }
+    }
     public class Decoder
     {
         public static string Decrypt(string stringToDecrypt, string privateKey, string password = null)
