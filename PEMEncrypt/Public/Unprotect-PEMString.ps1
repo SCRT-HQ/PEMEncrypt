@@ -1,4 +1,6 @@
 function Unprotect-PEMString {
+    [OutputType('System.String')]
+    [CmdletBinding()]
     Param (
         [parameter(Mandatory,Position = 0,ValueFromPipeline)]
         [String[]]
@@ -11,6 +13,9 @@ function Unprotect-PEMString {
         [SecureString]
         $Password
     )
+    Begin {
+        Import-Assemblies
+    }
     Process {
         foreach ($string in $StringToDecrypt) {
             try {

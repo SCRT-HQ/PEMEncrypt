@@ -1,4 +1,6 @@
 function Protect-PEMString {
+    [OutputType('System.String')]
+    [CmdletBinding()]
     Param (
         [parameter(Mandatory,Position = 0,ValueFromPipeline)]
         [String[]]
@@ -10,6 +12,9 @@ function Protect-PEMString {
         [Int]
         $KeySize = 2048
     )
+    Begin {
+        Import-Assemblies
+    }
     Process {
         foreach ($string in $StringToEncrypt) {
             try {
