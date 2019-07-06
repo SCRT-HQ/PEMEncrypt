@@ -294,8 +294,6 @@ $deployScriptBlock = {
                     $ReleaseNotes += (git log -1 --pretty=%B | Select-Object -Skip 2) -join "`n"
                     $ReleaseNotes += "`n`n***`n`n# Instructions`n`n"
                     $ReleaseNotes += @"
-**IMPORTANT: You MUST have the module '[Configuration](https://github.com/poshcode/Configuration)' installed as a prerequisite! Installing the module from the repo source or the release page does not automatically install dependencies!!**
-
 1. [Click here](https://github.com/scrthq/$($env:BHProjectName)/releases/download/v$($versionToDeploy.ToString())/$($env:BHProjectName).zip) to download the *$($env:BHProjectName).zip* file attached to the release.
 2. **If on Windows**: Right-click the downloaded zip, select Properties, then unblock the file.
     > _This is to prevent having to unblock each file individually after unzipping._
