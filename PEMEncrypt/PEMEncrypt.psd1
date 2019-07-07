@@ -15,7 +15,7 @@ RootModule = 'PEMEncrypt.psm1'
 ModuleVersion = '0.1.0'
 
 # Supported PSEditions
-# CompatiblePSEditions = @()
+CompatiblePSEditions = @('Desktop','Core')
 
 # ID used to uniquely identify this module
 GUID = 'ef40d36c-7f7d-47b4-9593-aedd1b751019'
@@ -33,7 +33,7 @@ Copyright = 'Nate Ferrell, 2019'
 Description = 'A cross-platform PowerShell module handling string encryption and decryption using RSA keys only. Allows strings to be encrypted when the client only has the public key available, in the event the encrypted string is being sent to a secure endpoint housing the private key where it will be decrypted for further use.'
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '5.0.0'
+PowerShellVersion = '5.1.0'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
@@ -42,7 +42,7 @@ PowerShellVersion = '5.0.0'
 # PowerShellHostVersion = ''
 
 # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-# DotNetFrameworkVersion = ''
+DotNetFrameworkVersion = '4.6.0'
 
 # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
 # CLRVersion = ''
