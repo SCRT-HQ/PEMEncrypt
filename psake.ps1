@@ -277,9 +277,10 @@ $deployScriptBlock = {
         if ($versionToDeploy) {
             try {
                 if ($ENV:BHBuildSystem -eq 'VSTS' -and -not [String]::IsNullOrEmpty($env:NugetApiKey)) {
-                    "    Publishing version [$($versionToDeploy)] to PSGallery..."
+                    "    Publishing module version on manifest to [$($versionToDeploy)]"
                     Update-Metadata -Path (Join-Path $outputModVerDir "$($env:BHProjectName).psd1") -PropertyName ModuleVersion -Value $versionToDeploy -Verbose
                     try {
+                        "    Publishing version [$($versionToDeploy)] to PSGallery..."
                         Publish-Module -Path $outputModVerDir -NuGetApiKey $env:NugetApiKey -Repository PSGallery -Verbose
                         "    Deployment successful!"
                     }
