@@ -26,9 +26,21 @@ Set-BuildVariables
 
 Add-Heading "Setting package feeds"
 
-Get-PackageProvider -Name Nuget -ForceBootstrap -Verbose:$false
-Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -Verbose:$false
-$PSDefaultParameterValues = @{
+$modHash = @{
+    PackageManagement = '1.3.1'
+    PowerShellGet     = '2.1.2'
+}
+foreach ($module in $modHash.Keys | Sort-Object) {
+    Write-BuildLog "Updating $module module if needed"
+    if ($null -eq (Get-Module $module -ListAvailable | Where-Object {[System.Version]$_.Version -ge [System.Version]($modHash[$module])})) {
+        Write-BuildLog "$module is below the minimum required version! Updating"
+        Install-Module $module -MinimumVersion $modHash[$module] -Force -AllowClobber -SkipPublisherCheck -Scope CurrentUser -Verbose:$false
+    }
+}
+
+Invoke-CommandWithLog {Get-PackageProvider -Name Nuget -ForceBootstrap -Verbose:$false}
+Invoke-CommandWithLog {Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -Verbose:$false}
+Invoke-CommandWithLog {$PSDefaultParameterValues = @{
     '*-Module:Verbose' = $false
     'Import-Module:ErrorAction' = 'Stop'
     'Import-Module:Force' = $true
@@ -38,7 +50,7 @@ $PSDefaultParameterValues = @{
     'Install-Module:Force' = $true
     'Install-Module:Scope' = 'CurrentUser'
     'Install-Module:Verbose' = $false
-}
+}}
 
 $update = @{}
 $verbose = @{}

@@ -222,9 +222,9 @@ $deployScriptBlock = {
         $result = Invoke-RestMethod @uploadParams
     }
     if (($ENV:BHBuildSystem -eq 'VSTS' -and $env:BHCommitMessage -match '!deploy' -and $env:BHBranchName -eq "master") -or $global:ForceDeploy -eq $true) {
-        if ($null -eq (Get-Module PoshTwit -ListAvailable)) {
+        if ($null -eq (Get-Module PoshTwit* -ListAvailable)) {
             "    Installing PoshTwit module..."
-            Install-Module PoshTwit -Scope CurrentUser
+            Install-Module PoshTwit -Scope CurrentUser -Repository PSGallery
         }
         Import-Module PoshTwit -Verbose:$false
         # Load the module, read the exported functions, update the psd1 FunctionsToExport
