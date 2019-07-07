@@ -222,10 +222,9 @@ $deployScriptBlock = {
         $result = Invoke-RestMethod @uploadParams
     }
     if (($ENV:BHBuildSystem -eq 'VSTS' -and $env:BHCommitMessage -match '!deploy' -and $env:BHBranchName -eq "master") -or $global:ForceDeploy -eq $true) {
-        if ($null -eq (Get-Module PoshTwit* -ListAvailable)) {
+        if ($null -eq (Get-Module PoshTwit -ListAvailable)) {
             "    Installing PoshTwit module..."
-            Import-Module PowerShellGet -Force
-            Install-Module PoshTwit -Scope CurrentUser -Repository PSGallery -Verbose
+            Install-Module PoshTwit -Scope CurrentUser
         }
         Import-Module PoshTwit -Verbose:$false
         # Load the module, read the exported functions, update the psd1 FunctionsToExport
@@ -234,7 +233,12 @@ $deployScriptBlock = {
             $commitVer = $commParsed.Matches.Value.Trim().Replace('v','')
         }
         $curVer = (Get-Module $env:BHProjectName).Version
-        $galVer = (Find-Module $env:BHProjectName -Repository PSGallery).Version.ToString()
+        $galVer = if ($moduleInGallery = Find-Module "$env:BHProjectName*" -Repository PSGallery) {
+            $moduleInGallery.Version.ToString()
+        }
+        else {
+            '0.0.1'
+        }
         $galVerSplit = $galVer.Split('.')
         $nextGalVer = [System.Version](($galVerSplit[0..($galVerSplit.Count - 2)] -join '.') + '.' + ([int]$galVerSplit[-1] + 1))
 
