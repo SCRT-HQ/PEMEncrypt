@@ -1,3 +1,5 @@
+New-Variable -Name IsCI -Value $($IsCI -or (Test-Path Env:\TF_BUILD)) -Scope Global -Force -Option AllScope
+
 function Get-Elapsed {
     if ($IsCI) {
         "[+$(((Get-Date) - (Get-Date $env:_BuildStart)).ToString())]"
