@@ -277,8 +277,13 @@ $deployScriptBlock = {
         if ($versionToDeploy) {
             try {
                 if ($ENV:BHBuildSystem -eq 'VSTS' -and -not [String]::IsNullOrEmpty($env:NugetApiKey)) {
-                    "    Updating module version on manifest to [$($versionToDeploy)]"
-                    Update-Metadata -Path (Join-Path $outputModVerDir "$($env:BHProjectName).psd1") -PropertyName ModuleVersion -Value $versionToDeploy -Verbose
+                    if ($manifest.Version.ToString() -eq $versionToDeploy.ToStrin()) {
+                        "    Manifest is already the expected version. Skipping manifest version update"
+                    }
+                    else {
+                        "    Updating module version on manifest to [$($versionToDeploy)]"
+                        Update-Metadata -Path (Join-Path $outputModVerDir "$($env:BHProjectName).psd1") -PropertyName ModuleVersion -Value $versionToDeploy -Verbose
+                    }
                     try {
                         "    Publishing version [$($versionToDeploy)] to PSGallery..."
                         Publish-Module -Path $outputModVerDir -NuGetApiKey $env:NugetApiKey -Repository PSGallery -Verbose
@@ -340,7 +345,6 @@ $deployScriptBlock = {
                 }
                 if ($ENV:BHBuildSystem -eq 'VSTS' -and -not [String]::IsNullOrEmpty($env:TwitterAccessSecret) -and -not [String]::IsNullOrEmpty($env:TwitterAccessToken) -and -not [String]::IsNullOrEmpty($env:TwitterConsumerKey) -and -not [String]::IsNullOrEmpty($env:TwitterConsumerSecret)) {
                     "    Publishing tweet about new release..."
-                    $manifest = Import-PowerShellDataFile -Path (Join-Path $outputModVerDir "$($env:BHProjectName).psd1")
                     $text = "#$($env:BHProjectName) v$($versionToDeploy) is now available on the #PSGallery! https://www.powershellgallery.com/packages/$($env:BHProjectName) #PowerShell"
                     $manifest.PrivateData.PSData.Tags | Foreach-Object {
                         $text += " #$($_)"
