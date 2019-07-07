@@ -203,12 +203,16 @@ $deployScriptBlock = {
         if ($versionToDeploy) {
             try {
                 if ($ENV:BHBuildSystem -eq 'VSTS' -and -not [String]::IsNullOrEmpty($env:NugetApiKey)) {
-                    if ($manifest.Version.ToString() -eq $versionToDeploy.ToStrin()) {
+                    $manifestPath = Join-Path $outputModVerDir "$($env:BHProjectName).psd1"
+                    if (-not $manifest) {
+                        $manifest = Import-PowerShellDataFile -Path $manifestPath
+                    }
+                    if ($manifest.ModuleVersion.ToString() -eq $versionToDeploy.ToString()) {
                         "    Manifest is already the expected version. Skipping manifest version update"
                     }
                     else {
                         "    Updating module version on manifest to [$($versionToDeploy)]"
-                        Update-Metadata -Path (Join-Path $outputModVerDir "$($env:BHProjectName).psd1") -PropertyName ModuleVersion -Value $versionToDeploy -Verbose
+                        Update-Metadata -Path $manifestPath -PropertyName ModuleVersion -Value $versionToDeploy -Verbose
                     }
                     try {
                         "    Publishing version [$($versionToDeploy)] to PSGallery..."
