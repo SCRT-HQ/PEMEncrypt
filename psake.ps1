@@ -146,81 +146,6 @@ task Test -Depends Init {
 
 
 $deployScriptBlock = {
-    function Publish-GitHubRelease {
-        <#
-            .SYNOPSIS
-            Publishes a release to GitHub Releases. Borrowed from https://www.herebedragons.io/powershell-create-github-release-with-artifact
-        #>
-        [CmdletBinding()]
-        Param (
-            [parameter(Mandatory = $true)]
-            [String]
-            $VersionNumber,
-            [parameter(Mandatory = $false)]
-            [String]
-            $CommitId = 'master',
-            [parameter(Mandatory = $true)]
-            [String]
-            $ReleaseNotes,
-            [parameter(Mandatory = $true)]
-            [ValidateScript( {Test-Path $_})]
-            [String]
-            $ArtifactPath,
-            [parameter(Mandatory = $true)]
-            [String]
-            $GitHubUsername,
-            [parameter(Mandatory = $true)]
-            [String]
-            $GitHubRepository,
-            [parameter(Mandatory = $true)]
-            [String]
-            $GitHubApiKey,
-            [parameter(Mandatory = $false)]
-            [Switch]
-            $PreRelease,
-            [parameter(Mandatory = $false)]
-            [Switch]
-            $Draft
-        )
-        $releaseData = @{
-            tag_name         = [string]::Format("v{0}", $VersionNumber)
-            target_commitish = $CommitId
-            name             = [string]::Format("$($env:BHProjectName) v{0}", $VersionNumber)
-            body             = $ReleaseNotes
-            draft            = [bool]$Draft
-            prerelease       = [bool]$PreRelease
-        }
-
-        $auth = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($gitHubApiKey + ":x-oauth-basic"))
-
-        $releaseParams = @{
-            Uri         = "https://api.github.com/repos/$GitHubUsername/$GitHubRepository/releases"
-            Method      = 'POST'
-            Headers     = @{
-                Authorization = $auth
-            }
-            ContentType = 'application/json'
-            Body        = (ConvertTo-Json $releaseData -Compress)
-        }
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $result = Invoke-RestMethod @releaseParams
-        $uploadUri = $result | Select-Object -ExpandProperty upload_url
-        $uploadUri = $uploadUri -creplace '\{\?name,label\}'
-        $artifact = Get-Item $ArtifactPath
-        $uploadUri = $uploadUri + "?name=$($artifact.Name)"
-        $uploadFile = $artifact.FullName
-
-        $uploadParams = @{
-            Uri         = $uploadUri
-            Method      = 'POST'
-            Headers     = @{
-                Authorization = $auth
-            }
-            ContentType = 'application/zip'
-            InFile      = $uploadFile
-        }
-        $result = Invoke-RestMethod @uploadParams
-    }
     if (($ENV:BHBuildSystem -eq 'VSTS' -and $env:BHCommitMessage -match '!deploy' -and $env:BHBranchName -eq "master") -or $global:ForceDeploy -eq $true) {
         if ($null -eq (Get-Module PoshTwit -ListAvailable)) {
             "    Installing PoshTwit module..."
@@ -233,11 +158,12 @@ $deployScriptBlock = {
             $commitVer = $commParsed.Matches.Value.Trim().Replace('v','')
         }
         $curVer = (Get-Module $env:BHProjectName).Version
-        $galVer = if ($moduleInGallery = Find-Module "$env:BHProjectName*" -Repository PSGallery) {
-            $moduleInGallery.Version.ToString()
+        if ($moduleInGallery = Find-Module "$env:BHProjectName*" -Repository PSGallery) {
+            $galVer = $moduleInGallery.Version.ToString()
+            "    Current version on the PSGallery is: $galVer"
         }
         else {
-            '0.0.1'
+            $galVer = '0.0.1'
         }
         $galVerSplit = $galVer.Split('.')
         $nextGalVer = [System.Version](($galVerSplit[0..($galVerSplit.Count - 2)] -join '.') + '.' + ([int]$galVerSplit[-1] + 1))
@@ -362,7 +288,7 @@ $deployScriptBlock = {
                 }
             }
             catch {
-                Write-Error $_ -ErrorAction Stop
+                Write-BuildError $_
             }
         }
         else {
