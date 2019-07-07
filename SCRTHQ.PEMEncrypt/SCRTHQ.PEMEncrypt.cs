@@ -27,6 +27,7 @@ namespace SCRTHQ.PEMEncrypt
             RSAParameters rsaParameters = new RSAParameters();
             rsaParameters.Modulus = keyPair.Modulus.ToByteArrayUnsigned();
             rsaParameters.Exponent = keyPair.Exponent.ToByteArrayUnsigned();
+            var padding = RSAEncryptionPadding.Pkcs1;
 
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(dwKeySize);
             rsa.ImportParameters(rsaParameters);
@@ -34,7 +35,7 @@ namespace SCRTHQ.PEMEncrypt
             string encrypted = Convert.ToBase64String(
                 rsa.Encrypt(
                     bytesToEncrypt,
-                    RSAEncryptionPadding.Pkcs1
+                    padding
                 )
             );
             return encrypted;
