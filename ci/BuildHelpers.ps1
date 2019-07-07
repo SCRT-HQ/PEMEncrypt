@@ -197,7 +197,7 @@ function Write-BuildLog {
 function Write-BuildWarning {
     param(
         [parameter(Mandatory,Position = 0,ValueFromRemainingArguments,ValueFromPipeline)]
-        [System.Object]
+        [System.String]
         $Message
     )
     Process {
@@ -212,14 +212,14 @@ function Write-BuildWarning {
 function Write-BuildError {
     param(
         [parameter(Mandatory,Position = 0,ValueFromRemainingArguments,ValueFromPipeline)]
-        [System.Object]
+        [System.String]
         $Message
     )
     Process {
-        Write-Error $Message
         if ($IsCI) {
             Write-Host "##vso[task.logissue type=error;]$Message"
         }
+        Write-Error $Message
     }
 }
 function Set-EnvironmentVariable {
