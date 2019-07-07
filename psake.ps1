@@ -284,7 +284,9 @@ $deployScriptBlock = {
                         "    Deployment successful!"
                     }
                     catch {
-                        Write-BuildError $_.Exception.Message
+                        $err = $_
+                        Write-BuildError $err.Exception.Message
+                        throw $err
                     }
                 }
                 else {
