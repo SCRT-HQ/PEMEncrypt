@@ -22,7 +22,7 @@ PEMEncrypt is a cross-platform PowerShell module handling string encryption and 
   </a>&nbsp;&nbsp;&nbsp;&nbsp;
   <!-- Codacy -->
   <a href="https://www.codacy.com/app/scrthq/PEMEncrypt?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=scrthq/PEMEncrypt&amp;utm_campaign=Badge_Grade">
-    <img src="https://api.codacy.com/project/badge/Grade/0d5203a1cf1945fe94c46b779eecb7f0"
+    <img src="https://api.codacy.com/project/badge/Grade/63f7e2eb9b764c62a4ff196f68c59100"
       alt="Codacy" title="Codacy" />
   </a>
   </br>
