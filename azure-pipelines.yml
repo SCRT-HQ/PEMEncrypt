@@ -3,7 +3,7 @@ resources:
   clean: true
 
 variables:
-- group: 'deployment-variables'
+- group: deployment-vars
 
 trigger:
   branches:
