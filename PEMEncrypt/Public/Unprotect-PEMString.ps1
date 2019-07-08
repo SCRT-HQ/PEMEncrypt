@@ -52,7 +52,7 @@ function Unprotect-PEMString {
     )
     Begin {
         Import-Assemblies
-        if (Test-Path $PrivateKey -IsValid) {
+        if ([System.IO.File]::Exists($PrivateKey)) {
             $PrivateKey = ([System.IO.File]::ReadAllText((Resolve-Path $PrivateKey).Path))
         }
     }

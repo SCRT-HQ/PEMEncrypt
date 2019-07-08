@@ -43,7 +43,7 @@ function Protect-PEMString {
     )
     Begin {
         Import-Assemblies
-        if (Test-Path $PublicKey -IsValid) {
+        if ([System.IO.File]::Exists($PublicKey)) {
             $PublicKey = ([System.IO.File]::ReadAllText((Resolve-Path $PublicKey).Path))
         }
     }
