@@ -3,7 +3,7 @@
 PEMEncrypt is a cross-platform PowerShell module handling string encryption and decryption using RSA keys only. It enables strings to be encrypted when the client only has the public key available, in the event the encrypted string is being sent to a secure endpoint housing the private key where it will be decrypted for further use. The same module can be implemented on the receiving endpoint to decrypt the strings as well, if desired.
 
 ***
-
+<br />
 <div align="center">
   <!-- Azure Pipelines -->
   <a href="https://dev.azure.com/scrthq/SCRT%20HQ/_build/latest?definitionId=6">
