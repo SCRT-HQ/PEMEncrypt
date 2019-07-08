@@ -12,7 +12,7 @@
 RootModule = 'PEMEncrypt.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1.0'
+ModuleVersion = '0.1.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop','Core')
@@ -96,7 +96,7 @@ PrivateData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
         Tags = @('PSEdition_Desktop', 'PSEdition_Core', 'Windows', 'MacOS', 'Linux', 'RSA',
-                'Crypto', 'Encrypt', 'Decrypt', 'PEM')
+                'Crypto', 'Encrypt', 'Decrypt', 'PEM', 'Security')
 
         # A URL to the license for this module.
         # LicenseUri = ''
@@ -105,7 +105,7 @@ PrivateData = @{
         ProjectUri = 'https://github.com/scrthq/PEMEncrypt'
 
         # A URL to an icon representing this module.
-        IconUri = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Lock_font_awesome.svg/1024px-Lock_font_awesome.svg.png'
+        IconUri = 'https://leghari.ca/images/other/pemecrypt.png'
 
         # ReleaseNotes of this module
         # ReleaseNotes = ''

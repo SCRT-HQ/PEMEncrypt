@@ -1,52 +1,121 @@
 # PEMEncrypt
 
-Cross-platform PowerShell scripts handling string encryption and decryption using RSA keys only. Allows strings to be encrypted when the client only has the public key available, in the event the encrypted string is being sent to a secure endpoint housing the private key where it will be decrypted for further use.
+PEMEncrypt is a cross-platform PowerShell module handling string encryption and decryption using RSA keys only. It enables strings to be encrypted when the client only has the public key available, in the event the encrypted string is being sent to a secure endpoint housing the private key where it will be decrypted for further use. The same module can be implemented on the receiving endpoint to decrypt the strings as well, if desired.
 
+***
+<br />
+<div align="center">
+  <!-- Azure Pipelines -->
+  <a href="https://dev.azure.com/scrthq/SCRT%20HQ/_build/latest?definitionId=6">
+    <img src="https://dev.azure.com/scrthq/SCRT%20HQ/_apis/build/status/PEMEncrypt-CI"
+      alt="Azure Pipelines" title="Azure Pipelines" />
+  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- Discord -->
+  <a href="https://discord.gg/G66zVG7">
+    <img src="https://img.shields.io/discord/235574673155293194.svg?style=flat&label=Discord&logo=discord&color=purple"
+      alt="Discord - Chat" title="Discord - Chat" />
+  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- Slack -->
+  <a href="https://scrthq-slack-invite.herokuapp.com/">
+    <img src="https://img.shields.io/badge/chat-on%20slack-orange.svg?style=flat&logo=slack"
+      alt="Slack - Chat" title="Slack - Chat" />
+  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- Codacy -->
+  <a href="https://www.codacy.com/app/scrthq/PEMEncrypt?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=scrthq/PEMEncrypt&amp;utm_campaign=Badge_Grade">
+    <img src="https://api.codacy.com/project/badge/Grade/0d5203a1cf1945fe94c46b779eecb7f0"
+      alt="Codacy" title="Codacy" />
+  </a>
+  </br>
+  </br>
+  <!-- PS Gallery -->
+  <a href="https://www.PowerShellGallery.com/packages/PEMEncrypt">
+    <img src="https://img.shields.io/powershellgallery/dt/PEMEncrypt.svg?style=flat&logo=powershell&color=blue"
+      alt="PowerShell Gallery" title="PowerShell Gallery" />
+  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- GitHub Releases -->
+  <a href="https://github.com/scrthq/PEMEncrypt/releases/latest">
+    <img src="https://img.shields.io/github/downloads/scrthq/PEMEncrypt/total.svg?logo=github&color=blue"
+      alt="GitHub Releases" title="GitHub Releases" />
+  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <!-- GitHub Releases -->
+  <a href="https://github.com/scrthq/PEMEncrypt/releases/latest">
+    <img src="https://img.shields.io/github/release/scrthq/PEMEncrypt.svg?label=version&logo=github"
+      alt="GitHub Releases" title="GitHub Releases" />
+  </a>
+</div>
+<br />
 
-## ZEE PLAN
+***
 
-### Background
+## Background
 
-Recently, I needed the ability to encrypt strings with *only* a public RSA key. I only needed to encrypt and only had access to the public key to encrypt with, as I would be sending that encrypted string to a secure endpoint which would decrypt the data sent and process it from there.
+Recently, I needed the ability to encrypt strings with *only* a public RSA key. I only needed to encrypt strings and only had access to the public key to encrypt with, as I would be sending that encrypted string to a secure endpoint which would decrypt the data sent and process it from there.
 
 All of the PowerShell examples I came across online, both on sites like Stack Overflow as well as within modules in the PowerShell Gallery, focused on encrypting strings by using public methods found on the `X509Certificate2` class. If I had the full certificate, that wouldn't be an issue, but I only had the public RSA key / PEM file and I soon found out that instantiating an `X509Certificate2` with only a public key is a bit difficult, if not impossible.
 
-I knew what I wanted to do was possible, I was already doing it in Python. PowerShell has never let me down before and I'll be hardset if it lets me down today! **Let the scripting commence!** My typical pattern when I get hit with problems like this is...
+## Installation
 
-1. Write a script or two that does what I need it to do.
-2. Parameterize that script to make the script reusable.
-3. Turn that script into a reusable function and wrap it in a module.
-4. Send to anyone that could use it.
-5. Eventually get a pipeline going to deploy it to the PowerShell Gallery for others to use.
+### PowerShell Gallery (Preferred)
 
-As usual, I had my mind set on going about my normal path. I started to wrap the scripts in functions, then started to remember how many people I know that almost always get stuck here.
+```powershell
+Install-Module PEMEncrypt -Scope CurrentUser -Repository PSGallery
+```
 
-**Let's walk through this journey together!**
+### GitHub Releases
 
-### What are we doing?
+Please see the [Releases section of this repository](https://github.com/scrthq/PEMEncrypt/releases) for instructions.
 
-Today, we'll be walking through the following:
+## Usage
 
-1. Converting the `encrypt.ps1` and `decrypt.ps1` scripts in this repo into reusable functions.
-2. Wrapping those functions in a module.
-3. Writing some Pester tests that can...
-   1. Validate that we can encrypt and decrypt strings as expected.
-   2. Throw errors when things should expectedly not work.
-4. Write a build script that will compile our module into a distributable, final form:
-   1. Run `dotnet build` against any C# projects, if applicable.
-   2. Compile all public and private functions onto the final PSM1 file.
-   3. Update our PSD1 module manifest file as needed.
-5. Attach Azure Pipelines to our project in GitHub so a build is triggered whenever we push commits to the GitHub repository.
-6. Set up a Release Pipeline in Azure Pipelines to automatically...
-   1. Deploy the module to the PowerShell Gallery
-   2. Deploy the module to GitHub Releases
-   3. Send out a tweet letting everyone know that the module was released.
+To view the function help at any time, please use `Get-Help Protect-PEMString` or `Get-Help Unprotect-PEMString` from your PowerShell session directly.
 
-The best part about all of the above is 100% of what we walk through is **FREE**. Zero dollars, $free.99.
+### Examples
 
-### Useful commands
+```powershell
+# Using a password-less private key
+$encrypted = 'Hello','How are you today?' | Protect-PEMString -PublicKey .\public.pem
+$encrypted | Unprotect-PEMString -PrivateKey .\private.pem
 
+# Use Get-Credential to prompt for credentials so it's not in plain text
+$encrypted = 'Hello','How are you today?' | Protect-PEMString -PublicKey .\public_des3.pem
+$keyCreds = Get-Credential -UserName key -Message 'Please enter the password for the private key'
+$encrypted | Unprotect-PEMString -PrivateKey .\private_des3.pem -Password $keyCreds.Password
 
+# Build a SecureString using a plain-text password
+$encrypted = 'Hello','How are you today?' | Protect-PEMString -PublicKey .\public_des3.pem
+$password = ConvertTo-SecureString 'P@$$w0rd' -AsPlainText -Force
+$encrypted | Unprotect-PEMString -PrivateKey .\private_des3.pem -Password $password
+```
+
+## Contributing
+
+Interested in helping out with PEMEncrypt development? Please check out our [Contribution Guidelines](https://github.com/scrthq/PEMEncrypt/blob/master/CONTRIBUTING.md)!
+
+Building the module locally to test changes is as easy as running the `build.ps1` file in the root of the repo. This will compile the module with your changes and import the newly compiled module at the end by default.
+
+Want to run the Pester tests locally? Pass `Test` as the value to the `Task` script parameter like so:
+
+```powershell
+.\build.ps1 -Task Test
+```
+
+## Code of Conduct
+
+Please adhere to our [Code of Conduct](https://github.com/scrthq/PEMEncrypt/blob/master/CODE_OF_CONDUCT.md) when interacting with this repo.
+
+## License
+
+[Apache 2.0](https://tldrlegal.com/license/apache-license-2.0-(apache-2.0))
+
+## Changelog
+
+[Full CHANGELOG here](https://github.com/scrthq/PEMEncrypt/blob/master/CHANGELOG.md)
+
+***
+
+## Generating RSA keys with OpenSSL
+
+Here are some helpful commands to generate key pairs with OpenSSL.
 
 ```powershell
 # Generate a private/public key pair (not password protected):

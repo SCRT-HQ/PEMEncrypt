@@ -32,12 +32,23 @@ Describe "PEMEncrypt Unit Tests" {
                 Path = $pubPWPath
             }
         )
-        It "Should encrypt a string using a public key only" -TestCases $testCases {
+        It "Should encrypt a string using a public key at path" -TestCases $testCases {
             Param(
                 [String]
                 $Path
             )
-            $output = Protect-PEMString -StringToEncrypt 'hello' -PublicKeyPath $Path
+            $output = Protect-PEMString -StringToEncrypt 'hello' -PublicKey $Path
+            $? | Should -Be $True
+            $output.Length | Should -BeGreaterThan 1
+            $output | Should -BeOfType 'System.String'
+        }
+        It "Should encrypt a string using a public key in string format" -TestCases $testCases {
+            Param(
+                [String]
+                $Path
+            )
+            $pubKey = Get-Content $Path -Raw
+            $output = Protect-PEMString -StringToEncrypt 'hello' -PublicKey $pubKey
             $? | Should -Be $True
             $output.Length | Should -BeGreaterThan 1
             $output | Should -BeOfType 'System.String'
@@ -56,7 +67,7 @@ Describe "PEMEncrypt Unit Tests" {
                 Password = $(ConvertTo-SecureString 'private' -Force -AsPlainText)
             }
         )
-        It "Should decrypt a string using the private key" -TestCases $testCases {
+        It "Should decrypt a string using the private key at path" -TestCases $testCases {
             Param(
                 [String]
                 $PublicKeyPath,
@@ -65,12 +76,33 @@ Describe "PEMEncrypt Unit Tests" {
                 [SecureString]
                 $Password
             )
-            $encString = $output = Protect-PEMString -StringToEncrypt 'hello' -PublicKeyPath $PublicKeyPath
+            $encString = $output = Protect-PEMString -StringToEncrypt 'hello' -PublicKey $PublicKeyPath
             $_password = @{}
             if ($null -ne $Password) {
                 $_password['Password'] = $Password
             }
-            $output = Unprotect-PEMString -StringToDecrypt $encString -PrivateKeyPath $PrivateKeyPath @_password
+            $output = Unprotect-PEMString -StringToDecrypt $encString -PrivateKey $PrivateKeyPath @_password
+            $? | Should -Be $True
+            $output | Should -BeExactly 'hello'
+            $output | Should -BeOfType 'System.String'
+        }
+        It "Should decrypt a string using the private key in string format" -TestCases $testCases {
+            Param(
+                [String]
+                $PublicKeyPath,
+                [String]
+                $PrivateKeyPath,
+                [SecureString]
+                $Password
+            )
+            $pubKey = Get-Content $PublicKeyPath -Raw
+            $priKey = Get-Content $PrivateKeyPath -Raw
+            $encString = $output = Protect-PEMString -StringToEncrypt 'hello' -PublicKey $pubKey
+            $_password = @{}
+            if ($null -ne $Password) {
+                $_password['Password'] = $Password
+            }
+            $output = Unprotect-PEMString -StringToDecrypt $encString -PrivateKey $priKey @_password
             $? | Should -Be $True
             $output | Should -BeExactly 'hello'
             $output | Should -BeOfType 'System.String'

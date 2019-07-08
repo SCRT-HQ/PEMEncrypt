@@ -12,7 +12,7 @@ namespace SCRTHQ.PEMEncrypt
 {
     public class Crypto
     {
-        public static string Encrypt(string stringToEncrypt, string publicKey, int dwKeySize = 2048)
+        public static string Encrypt(string stringToEncrypt, string publicKey)
         {
             Byte[] bytesToEncrypt = Encoding.UTF8.GetBytes(stringToEncrypt);
             PemReader reader;
@@ -29,7 +29,7 @@ namespace SCRTHQ.PEMEncrypt
             rsaParameters.Exponent = keyPair.Exponent.ToByteArrayUnsigned();
             var padding = RSAEncryptionPadding.Pkcs1;
 
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(dwKeySize);
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(keyPair.Modulus.BitLength);
             rsa.ImportParameters(rsaParameters);
 
             string encrypted = Convert.ToBase64String(
