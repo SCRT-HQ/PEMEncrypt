@@ -1,24 +1,19 @@
-# Contributing to PSGSuite
+# Contributing to PEMEncrypt
 
 <!-- TOC -->
 
-* [Contributing to PSGSuite](#contributing-to-psgsuite)
-  * [Git and Pull requests](#git-and-pull-requests)
-  * [Overview](#overview)
-    * [Step by Step (High-Level)](#step-by-step-high-level)
-    * [Contributing Guidelines](#contributing-guidelines)
-    * [Updating the Wiki](#updating-the-wiki)
-  * [Getting Started](#getting-started)
-    * [Enabling Debug Mode](#enabling-debug-mode)
-    * [Google .NET SDK Documentation](#google-net-sdk-documentation)
-      * [.NET/API Documentation Links](#netapi-documentation-links)
-  * [Keeping in Touch](#keeping-in-touch)
+* [Contributing to PEMEncrypt](#Contributing-to-PEMEncrypt)
+  * [Git and Pull requests](#Git-and-Pull-requests)
+  * [Overview](#Overview)
+    * [Step by Step (High-Level)](#Step-by-Step-High-Level)
+    * [Contributing Guidelines](#Contributing-Guidelines)
+  * [Keeping in Touch](#Keeping-in-Touch)
 
 <!-- /TOC -->
 
-Thank you for your interest in helping PSGSuite grow! Below you'll find some guidelines around developing additional features and squashing bugs, including some how-to's to get started quick, general style guidelines, etc.
+Thank you for your interest in helping PEMEncrypt grow! Below you'll find some guidelines around developing additional features and squashing bugs, including some how-to's to get started quick, general style guidelines, etc.
 
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/scrthq/PSGSuite.svg?columns=all)](https://waffle.io/scrthq/PSGSuite)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/scrthq/PEMEncrypt.svg?columns=all)](https://waffle.io/scrthq/PEMEncrypt)
 
 ## Git and Pull requests
 
@@ -62,113 +57,6 @@ Please follow these guidelines for any content being added:
     * have an entry in the ReadMe's `Most recent changes` section describing what was added, updated and/or fixed with this version number
         * *Please follow the same format already present*
         * *This can be copied over from the Changelog entry*
-
-### Updating the Wiki
-
-* Wiki updates are scripted during deployment builds, so there is no need to manually update the Wiki.
-* Any new or updated comment-based help content will be transformed to Markdown using `platyPS` and pushed to the Wiki repo when deployment conditions are met.
-
-## Getting Started
-
-### Enabling Debug Mode
-
-To enable debug mode and export the `New-GoogleService` function with the module, you can run the `Debub Mode.ps1` script in the root of the repo or the following lines of code from the root of the repo in PowerShell:
-
-```powershell
-$env:EnablePSGSuiteDebug = $true
-Import-Module (Join-Path (Join-Path "." "PSGSuite") "PSGSuite.psd1") -Force
-```
-
-Debug mode is useful as it gives you access to the `New-GoogleService` function. This is normally a private function that is used by most other functions to create `Google Service` object with which to create and execute requests with. For example:
-
-```powershell
-$serviceParams = @{
-    # This needs to be one of the scopes that the request method invoked by the function needs
-    Scope       = 'https://www.googleapis.com/auth/admin.directory.user'
-    # This is the Google SDK Service Type used by all classes/methods in that category.
-    # Most of the calls in PSGSuite use the below DirectoryService, as that houses the Google Admin SDK
-    ServiceType = 'Google.Apis.Admin.Directory.directory_v1.DirectoryService'
-}
-
-# Create the Google Service object and store that in the $service variable
-$service = New-GoogleService @serviceParams
-
-# Create the request object using the $service and store that in the $request variable
-$request = $service.Users.List()
-
-# Execute the request to return the results
-$request.Execute()
-```
-
-### Google .NET SDK Documentation
-
-PSGSuite uses Google's .NET SDK's for 99% of its functions. The easiest way to pull up the documentation for the function you are writing is by doing the following (*using the Admin Directory API as an example*):
-
-1. Find Google's API information for the function you're writing
-    * Usually the first result when searching for specific API's in Google:
-        * Search: `google admin directory api`
-        * Result: [G Suite Admin SDK Directory API](https://developers.google.com/admin-sdk/directory/)
-    * **See the [Documentation Links](#netapi-documentation-links) section below for some handy links**
-2. Open the **Guides** tab
-3. Click the **.NET** section under the `Quickstarts` header in the side menu
-4. Scroll to the bottom of the page and click the link for the **.NET reference documentation** under the **Further reading** header. For the Admin Directory API, it's: [Directory API .NET reference documentation](https://developers.google.com/resources/api-libraries/documentation/admin/directory_v1/csharp/latest/)
-5. Click the **Classes** dropdown on the top-left of the page, then click **Class List**
-6. Find the resource class you are looking for. Resource classes all end in `Resource`, i.e. `UsersResource` or `OrgunitResource`.
-7. Find the request method specific to your function. Request methods all end in `Request`, i.e. `ListRequest` or `InsertRequest`.
-
-#### .NET/API Documentation Links
-
-Here are some links to the most commonly used SDK's and API's in PSGSuite:
-
-* **Admin SDK: Directory API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/admin/directory_v1/csharp/latest/index.html)
-    * [API Documentation](https://developers.google.com/admin-sdk/directory/v1/reference/)
-* **Apps Activity API - Updating to Drive Activity API v2 (new name) - Sunset scheduled December 2019**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/appsactivity/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/drive/activity/v1/reference/)
-* **Contacts API - To be replaced soon with People API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/contacts/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/contacts/v3/reference)
-* **Drive Activity API v2**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/driveactivity/v2/csharp/latest/)
-    * [API Documentation](https://developers.google.com/drive/activity/v2/reference/rest/)
-* **Enterprise License Manager API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/licensing/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/admin-sdk/licensing/v1/reference/)
-* **Gmail API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/gmail/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/gmail/api/v1/reference/)
-* **Google Calendar API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/calendar/v3/csharp/latest/)
-    * [API Documentation](https://developers.google.com/calendar/v3/reference/)
-* **Google Classroom API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/classroom/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/classroom/reference/rest/)
-* **Google Docs API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/docs/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/docs/api/reference/rest/)
-* **Google Drive API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/drive/v3/csharp/latest/)
-    * [API Documentation](https://developers.google.com/drive/api/v3/reference/)
-* **Google Sheets API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/sheets/v4/csharp/latest/)
-    * [API Documentation](https://developers.google.com/sheets/api/reference/rest/)
-* **Google Slides API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/slides/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/slides/reference/rest/)
-* **Groups Settings API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/groupssettings/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/admin-sdk/groups-settings/v1/reference/groups)
-* **Hangouts Chat API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/chat/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/hangouts/chat/reference/)
-* **People API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/people/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/people/api/rest/)
-* **Tasks API**
-    * [.NET SDK Documentation](https://developers.google.com/resources/api-libraries/documentation/tasks/v1/csharp/latest/)
-    * [API Documentation](https://developers.google.com/tasks/v1/reference/)
-
 
 ## Keeping in Touch
 
