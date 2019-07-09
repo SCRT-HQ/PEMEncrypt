@@ -87,6 +87,18 @@ $password = ConvertTo-SecureString 'P@$$w0rd' -AsPlainText -Force
 $encrypted | Unprotect-PEMString -PrivateKey .\private_des3.pem -Password $password
 ```
 
+## FAQs
+
+### Why not use existing tools like the built-in `*-CMSMessage` cmdlets or modules like ProtectedData or EncryptDecrypt?
+
+The answer here is simple: I did not have a certificate and was not in a position to generate a new one for this use case; I had to use the public RSA key provided to me to encrypt my string with. Since I only had the public key and not a valid certificate, I could not use it to instantiate a certificate object.
+
+### I'm receiving an error message that says "Bad Length". What's happening?
+
+As outlined by [@praus](https://github.com/praus) in [Issue #3](https://github.com/scrthq/PEMEncrypt/issues/3), an RSA key "won't be able to encrypt strings longer than the key modulus size in bytes minus padding size (11 bytes for PKCS #1). For example, if your RSA key is 2048 bit long (therefore its modulus is 2048 bits/256 bytes), you will only be able to encrypt plaintexts that are 245 bytes in length or less. RSACryptoServiceProvider will throw CryptographicException when the plaintext is too long."
+
+If you are running into this error and cannot shorten your string that you are trying to decrypt, you will need to generate a larger key pair to do the encryption with that supports the string size needed.
+
 ## Contributing
 
 Interested in helping out with PEMEncrypt development? Please check out our [Contribution Guidelines](https://github.com/scrthq/PEMEncrypt/blob/master/CONTRIBUTING.md)!
