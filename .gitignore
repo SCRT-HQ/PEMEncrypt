@@ -353,4 +353,5 @@ MigrationBackup/
 
 # Repo specific
 BuildOutput
+Testing
 !/PEMEncrypt/bin

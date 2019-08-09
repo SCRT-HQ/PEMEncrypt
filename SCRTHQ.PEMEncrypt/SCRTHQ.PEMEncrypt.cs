@@ -1,12 +1,18 @@
+using System.Linq;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Math;
 using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Security;
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace SCRTHQ.PEMEncrypt
 {
@@ -80,11 +86,21 @@ namespace SCRTHQ.PEMEncrypt
         private static AsymmetricCipherKeyPair DecodePrivateKey(TextReader privateKey, string password)
         {
             PemReader pemReader = new PemReader(privateKey, new PasswordFinder(password));
-            AsymmetricCipherKeyPair privateKeyObject = (AsymmetricCipherKeyPair)pemReader.ReadObject();
-            RsaPrivateCrtKeyParameters rsaPrivatekey = (RsaPrivateCrtKeyParameters)privateKeyObject.Private;
-            RsaKeyParameters rsaPublicKey = new RsaKeyParameters(false, rsaPrivatekey.Modulus, rsaPrivatekey.PublicExponent);
-            AsymmetricCipherKeyPair kp = new AsymmetricCipherKeyPair(rsaPublicKey, rsaPrivatekey);
-            return kp;
+            try
+            {
+                AsymmetricCipherKeyPair privateKeyObject = (AsymmetricCipherKeyPair)pemReader.ReadObject();
+                RsaPrivateCrtKeyParameters rsaPrivatekey = (RsaPrivateCrtKeyParameters)privateKeyObject.Private;
+                RsaKeyParameters rsaPublicKey = new RsaKeyParameters(false, rsaPrivatekey.Modulus, rsaPrivatekey.PublicExponent);
+                AsymmetricCipherKeyPair kp = new AsymmetricCipherKeyPair(rsaPublicKey, rsaPrivatekey);
+                return kp;
+            }
+            catch
+            {
+                RsaPrivateCrtKeyParameters rsaPrivatekey = (RsaPrivateCrtKeyParameters)pemReader.ReadObject();
+                RsaKeyParameters rsaPublicKey = new RsaKeyParameters(false, rsaPrivatekey.Modulus, rsaPrivatekey.PublicExponent);
+                AsymmetricCipherKeyPair kp = new AsymmetricCipherKeyPair(rsaPublicKey, rsaPrivatekey);
+                return kp;
+            }
         }
         private class PasswordFinder : IPasswordFinder
         {
@@ -98,6 +114,122 @@ namespace SCRTHQ.PEMEncrypt
             {
                 return password.ToCharArray();
             }
+        }
+    }
+    public class RSAKey
+    {
+        public string PublicPEM { get; set; }
+        public string PrivatePEM { get; set; }
+        public string PublicSSH { get; set; }
+    }
+    public static class RSA
+    {
+        // Adapted from:
+        // - https://stackoverflow.com/a/27659151/5302680
+        // - https://stackoverflow.com/q/21937369/5302680
+        public static RSAKey Generate(int strength = 4096, string passPhrase = null)
+        {
+            try
+            {
+                RSAKey result = new RSAKey();
+                IAsymmetricCipherKeyPairGenerator gen;
+                KeyGenerationParameters param;
+                gen = new RsaKeyPairGenerator();
+                param = new RsaKeyGenerationParameters(
+                    BigInteger.ValueOf(3L),
+                    new SecureRandom(),
+                    strength,
+                    80
+                );
+                gen.Init(param);
+                AsymmetricCipherKeyPair pair = gen.GenerateKeyPair();
+                using(TextWriter textWriter = new StringWriter())
+                {
+                    PemWriter wr = new PemWriter(textWriter);
+                    if (passPhrase != null)
+                    {
+                        var encryptor = new Pkcs8Generator(pair.Private, Pkcs8Generator.PbeSha1_3DES);
+                        encryptor.IterationCount = 80;
+                        encryptor.Password = passPhrase.ToCharArray();
+                        var pem = encryptor.Generate();
+                        wr.WriteObject(pem);
+                    }
+                    else
+                    {
+                        wr.WriteObject(pair.Private);
+                    }
+                    wr.Writer.Flush();
+                    result.PrivatePEM = textWriter.ToString();
+                }
+
+                using (TextWriter textWriter = new StringWriter())
+                {
+                    PemWriter wr = new PemWriter(textWriter);
+                    wr.WriteObject(pair.Public);
+                    wr.Writer.Flush();
+
+                    result.PublicPEM = textWriter.ToString();
+                }
+
+                using (StringReader sr = new StringReader(result.PublicPEM))
+                {
+                    PemReader reader = new PemReader(sr);
+                    RsaKeyParameters r = (RsaKeyParameters)reader.ReadObject();
+                    byte[] sshrsa_bytes = Encoding.Default.GetBytes("ssh-rsa");
+                    byte[] n = r.Modulus.ToByteArray();
+                    byte[] e = r.Exponent.ToByteArray();
+
+                    string buffer64;
+                    using(MemoryStream ms = new MemoryStream()){
+                        ms.Write(ToBytes(sshrsa_bytes.Length), 0, 4);
+                        ms.Write(sshrsa_bytes, 0, sshrsa_bytes.Length);
+                        ms.Write(ToBytes(e.Length), 0, 4);
+                        ms.Write(e, 0, e.Length);
+                        ms.Write(ToBytes(n.Length), 0, 4);
+                        ms.Write(n, 0, n.Length);
+                        ms.Flush();
+                        buffer64 = Convert.ToBase64String(ms.ToArray());
+                    }
+
+                    result.PublicSSH = string.Format(
+                        "ssh-rsa {0} {1}@{2}",
+                        buffer64,
+                        Environment.UserName,
+                        Environment.MachineName);
+                }
+
+                return result;
+            }
+            catch (Org.BouncyCastle.Crypto.CryptoException ex)
+            {
+                throw ex;
+            }
+        }
+        private static byte[] ToBytes(int i)
+        {
+            byte[] bts = BitConverter.GetBytes(i);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(bts);
+            }
+            return bts;
+        }
+        private static byte[] GenerateSeed(string passPhrase)
+        {
+            //Hash the passphrasse 50,000 times
+            var passPhraseBytes = new byte[passPhrase.Length * sizeof(char)];
+            Buffer.BlockCopy(passPhrase.ToCharArray(), 0, passPhraseBytes, 0, passPhraseBytes.Length);
+            var digester = new Sha256Digest();
+            var seed = new byte[digester.GetDigestSize()];
+            digester.BlockUpdate(seed, 0, seed.Length);
+            digester.DoFinal(seed, 0);
+            for (var i = 0; i < 49999; i++)
+            {
+                digester = new Sha256Digest();
+                digester.BlockUpdate(seed, 0, seed.Length);
+                digester.DoFinal(seed, 0);
+            }
+            return seed;
         }
     }
 }

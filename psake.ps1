@@ -80,9 +80,19 @@ task Compile -depends Clean {
             $functionsToExport += $_.BaseName
         }
     }
-    Get-ChildItem -Path $sut -Directory | Where-Object {$_.BaseName -in @('lib','bin')} | ForEach-Object {
-        Copy-Item $_.FullName -Destination $outputModVerDir -Container -Recurse
+
+    # Compile assemblies and copy to outputModVerDir folder
+    $netFxPath = [System.IO.Path]::Combine($outputModVerDir,'bin','netfx')
+    $netStdPath = [System.IO.Path]::Combine($outputModVerDir,'bin','netstandard')
+    $csPath = (Resolve-Path "$PSScriptRoot\SCRTHQ.PEMEncrypt").Path
+    dotnet build $csPath
+    $bouncyCastleDll = [System.IO.Path]::Combine($csPath,'bin','Debug','net46','BouncyCastle.Crypto.dll')
+    $netFxPath,$netStdPath | ForEach-Object {
+        New-Item $_ -ItemType Directory -Force | Out-Null
+        Copy-Item $bouncyCastleDll -Destination $_
     }
+    Copy-Item ([System.IO.Path]::Combine($csPath,'bin','Debug','net46','SCRTHQ.PEMEncrypt.dll')) -Destination $netFxPath
+    Copy-Item ([System.IO.Path]::Combine($csPath,'bin','Debug','netstandard2.0','SCRTHQ.PEMEncrypt.dll')) -Destination $netStdPath
 
     # Copy over manifest
     Copy-Item -Path $env:BHPSModuleManifest -Destination $outputModVerDir
