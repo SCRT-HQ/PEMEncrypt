@@ -97,7 +97,7 @@ PrivateData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
         Tags = @('PSEdition_Desktop', 'PSEdition_Core', 'Windows', 'MacOS', 'Linux', 'RSA',
-                'Crypto', 'Encrypt', 'Decrypt', 'PEM', 'Security')
+                'Crypto', 'Encrypt', 'Decrypt', 'PEM', 'ssh-keygen', 'openssl', 'SSH', 'Security')
 
         # A URL to the license for this module.
         # LicenseUri = ''
