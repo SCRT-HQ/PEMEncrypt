@@ -1,6 +1,4 @@
-using System.Linq;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Generators;
@@ -9,7 +7,6 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -190,8 +187,9 @@ namespace SCRTHQ.PEMEncrypt
                     }
 
                     result.PublicSSH = string.Format(
-                        "ssh-rsa {0} {1}@{2}",
+                        "ssh-rsa {0} {1}@{2}@{3}",
                         buffer64,
+                        "PEMEncrypt",
                         Environment.UserName,
                         Environment.MachineName);
                 }

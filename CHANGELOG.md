@@ -1,10 +1,19 @@
-* [PEMEncrypt - ChangeLog](#PEMEncrypt---ChangeLog)
+* [PEMEncrypt - ChangeLog](#pemencrypt---changelog)
+  * [0.2.0 - 2019-08-10](#020---2019-08-10)
   * [0.1.1 - 2019-07-07](#011---2019-07-07)
   * [0.1.0 - 2019-07-07](#010---2019-07-07)
 
 ***
 
 # PEMEncrypt - ChangeLog
+
+## 0.2.0 - 2019-08-10
+
+* Added `New-RSAKeyPair` to enable generation of RSA PEM and SSH keys directly from PowerShell
+  * Supports password protection keys
+  * Defaults to 4096 key length
+  * Offers an Interactive mode using the `-Interactive` or `-i` switch to simulate `ssh-keygen` experience
+* Updated README with command comparisons between `openssl`, `ssh-keygen` and `New-RSAKeyPair`
 
 ## 0.1.1 - 2019-07-07
 

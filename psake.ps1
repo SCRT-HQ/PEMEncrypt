@@ -66,9 +66,6 @@ task Compile -depends Clean {
     # Append items to psm1
     Write-Verbose -Message 'Creating psm1...'
     $psm1 = New-Item -Path (Join-Path -Path $outputModVerDir -ChildPath "$($ENV:BHProjectName).psm1") -ItemType File -Force
-
-    Get-Content (Join-Path -Path $ENV:BHModulePath -ChildPath "$($ENV:BHProjectName).psm1") -Raw  | Add-Content -Path $psm1 -Encoding UTF8
-
     if (Test-Path (Join-Path -Path $sut -ChildPath 'Private')) {
         Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Private') -Filter "*.ps1" -Recurse -File | ForEach-Object {
             "$(Get-Content $_.FullName -Raw)`n" | Add-Content -Path $psm1 -Encoding UTF8
@@ -80,6 +77,9 @@ task Compile -depends Clean {
             $functionsToExport += $_.BaseName
         }
     }
+
+    #Add the contents of the default PSM1 to the new PSM1
+    Get-Content (Join-Path -Path $ENV:BHModulePath -ChildPath "$($ENV:BHProjectName).psm1") -Raw  | Add-Content -Path $psm1 -Encoding UTF8
 
     # Compile assemblies and copy to outputModVerDir folder
     $netFxPath = [System.IO.Path]::Combine($outputModVerDir,'bin','netfx')

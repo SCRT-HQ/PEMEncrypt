@@ -63,7 +63,7 @@ function Unprotect-PEMString {
                     [SCRTHQ.PEMEncrypt.Crypto]::Decrypt(
                         $string,
                         $PrivateKey,
-                        (New-Object PSCredential 'user',$Password).GetNetworkCredential().Password
+                        (Unprotect-SecureString -SecureString $Password)
                     )
                 }
                 else {
