@@ -85,22 +85,20 @@ namespace SCRTHQ.PEMEncrypt
         }
         private static AsymmetricCipherKeyPair DecodePrivateKey(TextReader privateKey, string password)
         {
+            RsaPrivateCrtKeyParameters rsaPrivatekey;
             PemReader pemReader = new PemReader(privateKey, new PasswordFinder(password));
-            try
+            var privateKeyObject = pemReader.ReadObject();
+            if (privateKeyObject is AsymmetricCipherKeyPair ackp)
             {
-                AsymmetricCipherKeyPair privateKeyObject = (AsymmetricCipherKeyPair)pemReader.ReadObject();
-                RsaPrivateCrtKeyParameters rsaPrivatekey = (RsaPrivateCrtKeyParameters)privateKeyObject.Private;
-                RsaKeyParameters rsaPublicKey = new RsaKeyParameters(false, rsaPrivatekey.Modulus, rsaPrivatekey.PublicExponent);
-                AsymmetricCipherKeyPair kp = new AsymmetricCipherKeyPair(rsaPublicKey, rsaPrivatekey);
-                return kp;
+                rsaPrivatekey = (RsaPrivateCrtKeyParameters)ackp.Private;
             }
-            catch
+            else
             {
-                RsaPrivateCrtKeyParameters rsaPrivatekey = (RsaPrivateCrtKeyParameters)pemReader.ReadObject();
-                RsaKeyParameters rsaPublicKey = new RsaKeyParameters(false, rsaPrivatekey.Modulus, rsaPrivatekey.PublicExponent);
-                AsymmetricCipherKeyPair kp = new AsymmetricCipherKeyPair(rsaPublicKey, rsaPrivatekey);
-                return kp;
+                rsaPrivatekey = (RsaPrivateCrtKeyParameters)privateKeyObject;
             }
+            RsaKeyParameters rsaPublicKey = new RsaKeyParameters(false, rsaPrivatekey.Modulus, rsaPrivatekey.PublicExponent);
+            AsymmetricCipherKeyPair kp = new AsymmetricCipherKeyPair(rsaPublicKey, rsaPrivatekey);
+            return kp;
         }
         private class PasswordFinder : IPasswordFinder
         {
@@ -213,23 +211,6 @@ namespace SCRTHQ.PEMEncrypt
                 Array.Reverse(bts);
             }
             return bts;
-        }
-        private static byte[] GenerateSeed(string passPhrase)
-        {
-            //Hash the passphrasse 50,000 times
-            var passPhraseBytes = new byte[passPhrase.Length * sizeof(char)];
-            Buffer.BlockCopy(passPhrase.ToCharArray(), 0, passPhraseBytes, 0, passPhraseBytes.Length);
-            var digester = new Sha256Digest();
-            var seed = new byte[digester.GetDigestSize()];
-            digester.BlockUpdate(seed, 0, seed.Length);
-            digester.DoFinal(seed, 0);
-            for (var i = 0; i < 49999; i++)
-            {
-                digester = new Sha256Digest();
-                digester.BlockUpdate(seed, 0, seed.Length);
-                digester.DoFinal(seed, 0);
-            }
-            return seed;
         }
     }
 }
