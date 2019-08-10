@@ -35,6 +35,7 @@ Description = 'A cross-platform PowerShell module handling string encryption and
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '5.1.0'
 
+
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
 
