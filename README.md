@@ -125,24 +125,63 @@ Please adhere to our [Code of Conduct](https://github.com/scrthq/PEMEncrypt/blob
 
 ***
 
-## Generating RSA keys with OpenSSL
+## Generating RSA and SSH keys
 
-Here are some helpful commands to generate key pairs with OpenSSL.
+Here are some helpful commands to generate key pairs with PEMEncrypt in comparison with the same commands in `openssl` and `ssh-keygen`
+
+### RSA PEM Keys
+
+**OpenSSL**
 
 ```powershell
-# Generate a private/public key pair (not password protected):
-## Generate the private key and save as private.pem in the current directory.
-openssl genrsa -out private.pem 2048
+# No password
+openssl genrsa -out key 4096
+openssl rsa -in key -outform PEM -pubout -out key.pem
 
-## Extract the public key from the generated private key.
-openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+# With password
+openssl genrsa -des3 -out protected 4096 -passout pass:foobar
+openssl rsa -in protected -outform PEM -pubout -out protected.pem -passin pass:foobar
+```
 
-# Generate a password protected private/public key pair:
-## Generate the private key and save as private.pem in the current directory.
-## Enter the desired password when prompted, then verify the same password when prompted again.
-openssl genrsa -des3 -out private_des3.pem 2048
+**PEMEncrypt**
 
-## Extract the public key from the generated private key.
-## Enter the password set when creating the private key when prompted.
-openssl rsa -in private_des3.pem -outform PEM -pubout -out public_des3.pem
+* Generates public/private key pair at once by default.
+* Defaults to 4096 bit-length, but length left here for comparison.
+
+```powershell
+# No password
+## Aliased command below translates to: New-RSAKeyPair -NoSSH -Length 4096 -Path key
+genrsa -out key 4096
+
+# With password
+## Aliased command below translates to: New-RSAKeyPair -NoSSH -Length 4096 -Path key -Password foobar
+genrsa -out protected -p foobar 4096
+```
+
+### SSH Keys
+
+**ssh-keygen**
+
+* Prompts for password if none is specified, even if no password is desired
+
+```powershell
+# No password
+ssh-keygen -f ~/.ssh/id_newkey -t rsa -b 4096
+
+# With password
+ssh-keygen -f ~/.ssh/id_protected -t rsa -b 4096 -N foobar
+```
+
+**PEMEncrypt**
+
+* Generates the key pair with no password when no password provided
+
+```powershell
+# No password
+## Aliased command below translates to: New-RSAKeyPair -NoPEM -Length 4096 -Path ~/.ssh/id_newkey
+genssh -out ~/.ssh/id_newkey -b 4096
+
+# With password
+## Aliased command below translates to: New-RSAKeyPair -NoPEM -Length 4096 -Path ~/.ssh/id_protected -Password foobar
+genssh -out ~/.ssh/id_protected -b 4096 -p foobar
 ```

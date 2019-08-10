@@ -12,7 +12,7 @@
 RootModule = 'PEMEncrypt.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1.1'
+ModuleVersion = '0.2.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop','Core')
@@ -34,6 +34,7 @@ Description = 'A cross-platform PowerShell module handling string encryption and
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '5.1.0'
+
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
@@ -78,7 +79,7 @@ FunctionsToExport = '*'
 # VariablesToExport = '*'
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-# AliasesToExport = @()
+AliasesToExport = @('genrsa','genssh','genkey')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -96,7 +97,7 @@ PrivateData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
         Tags = @('PSEdition_Desktop', 'PSEdition_Core', 'Windows', 'MacOS', 'Linux', 'RSA',
-                'Crypto', 'Encrypt', 'Decrypt', 'PEM', 'Security')
+                'Crypto', 'Encrypt', 'Decrypt', 'PEM', 'ssh-keygen', 'openssl', 'SSH', 'Security')
 
         # A URL to the license for this module.
         # LicenseUri = ''

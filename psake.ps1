@@ -66,9 +66,6 @@ task Compile -depends Clean {
     # Append items to psm1
     Write-Verbose -Message 'Creating psm1...'
     $psm1 = New-Item -Path (Join-Path -Path $outputModVerDir -ChildPath "$($ENV:BHProjectName).psm1") -ItemType File -Force
-
-    Get-Content (Join-Path -Path $ENV:BHModulePath -ChildPath "$($ENV:BHProjectName).psm1") -Raw  | Add-Content -Path $psm1 -Encoding UTF8
-
     if (Test-Path (Join-Path -Path $sut -ChildPath 'Private')) {
         Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Private') -Filter "*.ps1" -Recurse -File | ForEach-Object {
             "$(Get-Content $_.FullName -Raw)`n" | Add-Content -Path $psm1 -Encoding UTF8
@@ -80,9 +77,22 @@ task Compile -depends Clean {
             $functionsToExport += $_.BaseName
         }
     }
-    Get-ChildItem -Path $sut -Directory | Where-Object {$_.BaseName -in @('lib','bin')} | ForEach-Object {
-        Copy-Item $_.FullName -Destination $outputModVerDir -Container -Recurse
+
+    #Add the contents of the default PSM1 to the new PSM1
+    Get-Content (Join-Path -Path $ENV:BHModulePath -ChildPath "$($ENV:BHProjectName).psm1") -Raw  | Add-Content -Path $psm1 -Encoding UTF8
+
+    # Compile assemblies and copy to outputModVerDir folder
+    $netFxPath = [System.IO.Path]::Combine($outputModVerDir,'bin','netfx')
+    $netStdPath = [System.IO.Path]::Combine($outputModVerDir,'bin','netstandard')
+    $csPath = (Resolve-Path "$PSScriptRoot\SCRTHQ.PEMEncrypt").Path
+    dotnet build $csPath
+    $bouncyCastleDll = [System.IO.Path]::Combine($csPath,'bin','Debug','net46','BouncyCastle.Crypto.dll')
+    $netFxPath,$netStdPath | ForEach-Object {
+        New-Item $_ -ItemType Directory -Force | Out-Null
+        Copy-Item $bouncyCastleDll -Destination $_
     }
+    Copy-Item ([System.IO.Path]::Combine($csPath,'bin','Debug','net46','SCRTHQ.PEMEncrypt.dll')) -Destination $netFxPath
+    Copy-Item ([System.IO.Path]::Combine($csPath,'bin','Debug','netstandard2.0','SCRTHQ.PEMEncrypt.dll')) -Destination $netStdPath
 
     # Copy over manifest
     Copy-Item -Path $env:BHPSModuleManifest -Destination $outputModVerDir
