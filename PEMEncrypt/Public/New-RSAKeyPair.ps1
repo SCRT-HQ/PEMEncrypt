@@ -136,7 +136,13 @@ function New-RSAKeyPair {
                     $Path
                 }
                 if (-not $Force -and (Test-Path $newPath)) {
-                    throw "Key already exists at desired path: $newPath. Use -Force to overwrite the existing key or choose a different path"
+                    Write-Error "Key already exists at desired path: $newPath. Use -Force to overwrite the existing key or choose a different path"
+                    return
+                }
+                $parent = Split-Path $newPath -Parent
+                if (-not (Test-Path $parent)) {
+                    Write-Host "Creating missing parent folder: $parent"
+                    New-Item -ItemType Directory $parent -Force | Out-Null
                 }
             }
             $Length = if ($choice = Read-Host -Prompt "Enter desired key bit length (Default: 4096)") {
@@ -149,15 +155,17 @@ function New-RSAKeyPair {
             if (-not ([System.String]::IsNullOrEmpty((Unprotect-SecureString -SecureString $Password)))) {
                 $confirmed = Read-Host -AsSecureString -Prompt "Enter the same passphrase to confirm"
                 if ((Unprotect-SecureString -SecureString $confirmed) -ne (Unprotect-SecureString -SecureString $Password)) {
-                    Write-Warning "Passphrases provided do not match! Exiting"
-                    throw
+                    Write-Error "Passphrases provided do not match! Exiting"
+                    return
                 }
+                Write-Host "Generating passphrase protected key pair"
                 $keys = [SCRTHQ.PEMEncrypt.RSA]::Generate(
                     $Length,
                     (Unprotect-SecureString -SecureString $Password)
                 )
             }
             else {
+                Write-Host "Generating key pair"
                 $keys = [SCRTHQ.PEMEncrypt.RSA]::Generate(
                     $Length
                 )
@@ -181,22 +189,37 @@ function New-RSAKeyPair {
             }
         }
         else {
-            $keys = if ($PSBoundParameters.ContainsKey('Password')) {
-                [SCRTHQ.PEMEncrypt.RSA]::Generate(
-                    $Length,
-                    $(if($Password -is [SecureString]){(Unprotect-SecureString -SecureString $Password)}else{"$Password"})
-                )
+            if (-not $NoFile -and -not $Force -and (Test-Path $Path)) {
+                Write-Error "Key already exists at desired path: $Path. Use -Force to overwrite the existing key or choose a different path."
+                return
             }
             else {
-                [SCRTHQ.PEMEncrypt.RSA]::Generate(
-                    $Length
-                )
-            }
-            if (-not $NoFile) {
-                if (-not $Force -and (Test-Path $Path)) {
-                    throw "Key already exists at desired path: $Path. Use -Force to overwrite the existing key or choose a different path."
+                $parent = Split-Path $Path -Parent
+                if (-not (Test-Path $parent)) {
+                    Write-Host "Creating missing parent folder: $parent"
+                    New-Item -ItemType Directory $parent -Force | Out-Null
+                }
+                $keys = if ($PSBoundParameters.ContainsKey('Password')) {
+                    Write-Host "Generating passphrase protected key pair"
+                    [SCRTHQ.PEMEncrypt.RSA]::Generate(
+                        $Length,
+                        $(
+                            if ($Password -is [SecureString]) {
+                                (Unprotect-SecureString -SecureString $Password)
+                            }
+                            else {
+                                "$Password"
+                            }
+                        )
+                    )
                 }
                 else {
+                    Write-Host "Generating key pair"
+                    [SCRTHQ.PEMEncrypt.RSA]::Generate(
+                        $Length
+                    )
+                }
+                if (-not $NoFile) {
                     Write-Host "Saving private key to path    : $Path"
                     $keys.PrivatePEM | Set-Content -Path $Path -Force
                     if (-not $NoSSH) {
@@ -210,9 +233,9 @@ function New-RSAKeyPair {
                         $keys.PublicPEM | Set-Content -Path $pemPath -Force
                     }
                 }
-            }
-            if ($PassThru -or $NoFile) {
-                $keys
+                if ($PassThru -or $NoFile) {
+                    $keys
+                }
             }
         }
     }
